@@ -1,0 +1,2 @@
+v3_api_key = ""
+base_url = ""
