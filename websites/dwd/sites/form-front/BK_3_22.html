@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linkin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_job.css') }}">
+    <style>
+        
+    .download-note{
+      margin: .25rem 0 0 0;
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.55;
+    }
+
+    .download-callout{
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px dashed rgba(37,99,235,.35);
+      background: rgba(37,99,235,.04);
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.55rem;
+      padding: .85rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      cursor:pointer;
+      font-weight: 800;
+      transition: var(--transition);
+      user-select:none;
+    }
+
+    .btn-primary{
+      width:100%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color:#fff;
+      box-shadow: 0 8px 20px rgba(37,99,235,.22);
+    }
+    .btn-primary:hover{ transform: translateY(-1px); }
+        
+        #quickApplyOverlay{
+          position: fixed;
+          inset: 0;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          padding: 18px;
+          background: rgba(2, 6, 23, 0.55);
+          z-index: 9999;
+        }
+        #quickApplyCard{
+          width: min(560px, calc(100vw - 36px));
+          background: #ffffff;
+          border-radius: 16px;
+          box-shadow: 0 18px 60px rgba(2, 6, 23, 0.25);
+          overflow: hidden;
+          border: 1px solid rgba(15, 23, 42, 0.10);
+        }
+        .qa-header{
+          padding: 16px 18px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        .qa-title{
+          margin: 0;
+          font-size: 16px;
+          font-weight: 800;
+          color: #0f172a;
+          line-height: 1.2;
+        }
+        .qa-subtitle{
+          margin: 4px 0 0 0;
+          font-size: 12px;
+          font-weight: 600;
+          color: #64748b;
+        }
+        .qa-close{
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          font-size: 20px;
+          line-height: 1;
+          padding: 6px 8px;
+          color: #0f172a;
+        }
+        .qa-body{
+          padding: 16px 18px 18px 18px;
+        }
+        .qa-field{
+          margin-bottom: 12px;
+        }
+        .qa-field label{
+          display: block;
+          font-size: 12px;
+          font-weight: 800;
+          color: #334155;
+          margin-bottom: 6px;
+        }
+        .qa-field input,
+        .qa-field select{
+          width: 100%;
+          padding: 10px 10px;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          outline: none;
+          font-size: 14px;
+          color: #0f172a;
+          background: #fff;
+        }
+        .qa-field input:focus,
+        .qa-field select:focus{
+          border-color: rgba(10, 102, 194, 0.75);
+          box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.14);
+        }
+        .qa-actions{
+          margin-top: 10px;
+          display: flex;
+          gap: 10px;
+          justify-content: flex-end;
+          flex-wrap: wrap;
+        }
+        .qa-btn{
+          border-radius: 10px;
+          padding: 10px 14px;
+          cursor: pointer;
+          font-weight: 800;
+          border: 1px solid transparent;
+        }
+        .qa-btn-ghost{
+          background: transparent;
+          border-color: #e2e8f0;
+          color: #0f172a;
+        }
+        .qa-btn-primary{
+          background: #0a66c2;
+          color: #ffffff;
+        }
+        #qaFeedback{
+          margin-top: 10px;
+          font-size: 13px;
+          font-weight: 800;
+          color: #64748b;
+        }
+
+        
+    .perm-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+
+    .perm-text{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .perm-title{
+      font-weight: 800;
+      color: var(--secondary-color);
+    }
+
+    .perm-subtitle{
+      font-size: .92rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .switch{
+      position: relative;
+      width: 54px;
+      height: 30px;
+      flex: 0 0 auto;
+    }
+
+    .switch input{
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider{
+      position:absolute;
+      cursor:pointer;
+      inset:0;
+      background: #cbd5e1;
+      border-radius: 999px;
+      transition: all .2s ease;
+      box-shadow: inset 0 1px 2px rgba(15,23,42,.12);
+    }
+
+    .slider:before{
+      content:"";
+      position:absolute;
+      height: 24px;
+      width: 24px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 999px;
+      transition: all .2s ease;
+      box-shadow: 0 6px 14px rgba(15,23,42,.18);
+    }
+
+    .switch input:checked + .slider{
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    }
+
+    .switch input:checked + .slider:before{
+      transform: translateX(24px);
+    }
+
+    .perm-pill{
+      margin-top: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding: .65rem .8rem;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: .92rem;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--secondary-color);
+    }
+
+    .perm-pill.ok{
+      border-color: rgba(22,163,74,.35);
+      background: rgba(22,163,74,.06);
+      color: #166534;
+    }
+
+    .perm-pill.err{
+      border-color: rgba(220,38,38,.25);
+      background: rgba(220,38,38,.06);
+      color: #991b1b;
+    }
+      </style>      
+</head>
+<body>
+    <nav class="navbar">
+       <div class="navbar-left">
+        <a href="index.html" class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo"></a>
+        <div class="search-box">
+            <img src="{{ url_for('static', filename='images/search.png') }}" >
+            <input type="text" placeholder="Search for anything">
+        </div>
+       </div>
+       <div class="navbar-center">
+        <ul>
+            <li><a href="#" class="active-link"><img src="{{ url_for('static', filename='images/jobs.png') }}" alt="home"> <span>Jobs Hunting</span></a></li>
+            <li><a href="#"><img src="{{ url_for('static', filename='images/network.png') }}" alt="network"> <span>My Network</span></a></li>
+            <li><a href="#"><img src="{{ url_for('static', filename='images/message.png') }}" alt="message"> <span>Messaging</span></a></li>
+            <li><a href="#"><img src="{{ url_for('static', filename='images/notification.png') }}" alt="notification"> <span>Notifications</span></a></li>
+        </ul>
+       </div>
+       <div class="navbar-right">
+        <div class="online">
+        <img src="{{ url_for('static', filename='images/human.png') }}" class="nav-profile-img" onclick="toggleMenu()">
+        </div>
+       </div>
+       <div class="profile-menu-wrap" id="profileMenu">
+        <div class="profile-menu">
+            <div class="user-info">
+                <img src="{{ url_for('static', filename='images/human.png') }}">
+                <div>
+                    <h3>Visitor</h3>
+                    <a href="#">Login</a>
+                </div>
+            </div>
+            <hr>
+            <a href="#" class="profile-menu-link">
+                <img src="{{ url_for('static', filename='images/feedback.png') }}">
+                <p>Give Feedback</p>
+                <span>></span>
+            </a>
+            <a href="#" class="profile-menu-link">
+                <img src="{{ url_for('static', filename='images/setting.png') }}">
+                <p>Settings & Privacy</p>
+                <span>></span>
+            </a>
+            <a href="#" class="profile-menu-link">
+                <img src="{{ url_for('static', filename='images/help.png') }}">
+                <p>Help & Support</p>
+                <span>></span>
+            </a>
+            <a href="#" class="profile-menu-link">
+                <img src="{{ url_for('static', filename='images/display.png') }}">
+                <p>Display & Accessibility</p>
+                <span>></span>
+            </a>
+            </div>
+       </div>
+    </nav>
+
+    <div class="container">
+        <div class="left-sidebar">
+            <div class="sidebar-profile-box">
+                <img src="{{ url_for('static', filename='images/cover-pic.png') }}" width="100%">
+                <div class="sidebar-profile-info">
+                    <img src="{{ url_for('static', filename='images/human.png') }}">
+                    <h1>Visitor</h1>
+                    <ul>
+                        <li>Your profile views <span>--</span></li>
+                        <li>Your application views <span>--</span></li>
+                        <li>Your Connections<span>--</span></li>
+                    </ul>
+                </div>
+                <div class="sidebar-profile-link">
+                    <a href="#"><img src="{{ url_for('static', filename='images/items.png') }}">My Items</a>
+                    <a href="#"><img src="{{ url_for('static', filename='images/premium.png') }}">Try Premium</a>
+                </div>
+            </div>
+
+            <div class="sidebar-activity" id="sidebarActivity">
+                <h3>Suggested Topics</h3>
+                <a href="#"><img src="{{ url_for('static', filename='images/recent.png') }}">Artificial Intelligence</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/recent.png') }}">Data Science</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/recent.png') }}">Frontend Development</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/recent.png') }}">UX Research</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/recent.png') }}">Cloud Engineering</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/recent.png') }}">Cybersecurity</a>
+
+                <h3>Featured Communities</h3>
+                <a href="#"><img src="{{ url_for('static', filename='images/group.png') }}">AI Enthusiasts (89k members)</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/group.png') }}">Python for Everyone</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/group.png') }}">Remote Work Professionals</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/group.png') }}">Career Advice Hub</a>
+
+                <h3>Popular Hashtags</h3>
+                <a href="#"><img src="{{ url_for('static', filename='images/hashtag.png') }}">#machinelearning</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/hashtag.png') }}">#career</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/hashtag.png') }}">#remotework</a>
+                <a href="#"><img src="{{ url_for('static', filename='images/hashtag.png') }}">#techjobs</a>
+                <div class="discover-more-link">
+                    <a href="#">Discover More</a>
+                </div>
+                </div>
+                <p id="showMoreLink" onclick="toggleActivity()">Show more <b>+</b></p>
+
+        </div>
+        <div class="main-content">
+            <div class="sort-by">
+                <hr>
+                <p>Sort by : <span>relevant <img src="{{ url_for('static', filename='images/down-arrow.png') }}" ></span> </p>
+
+            </div>
+            <div class="post">
+                <div class="post-author">
+                    <img src="{{ url_for('static', filename='images/glasswall.png') }}">
+                    <div>
+                        <h1>AI Engineer</h1>
+                        <small>Glasswall (Remote work)</small>
+                        <small>UK · 1 week ago · Over 100 applicants</small>
+                    </div>
+                </div>
+                <p>We are looking for an AI Engineer to join our growing AI team.
+                   This is a highly collaborative and hands-on role suited for someone excited about creating
+                   scalable AI applications within a fast-moving technology company.
+                </p>
+                <div class="post-activity">
+                    <div class="post-activity-link">
+                        <img src="{{ url_for('static', filename='images/comment.png') }}">
+                        <span>See more information</span>
+                    </div>
+                    <div class="post-activity-link">
+                        <img src="{{ url_for('static', filename='images/send.png') }}">
+                        <span>Quick application</span>
+                    </div>
+                    <div class="post-activity-link">
+                        <img src="{{ url_for('static', filename='images/share.png') }}">
+                        <span>Share with others</span>
+                    </div>
+                    </div>
+            </div>
+
+            <div class="post">
+                <div class="post-author">
+                    <img src="{{ url_for('static', filename='images/aitech.png') }}">
+                    <div>
+                        <h1>AI Research Engineer</h1>
+                        <small>EurAiTech Labs (Hybrid work)</small>
+                        <small>Paris, France • 3 days ago • 95 applicants</small>
+                    </div>
+                </div>
+                <p>
+                    EurAiTech Labs is seeking an experienced AI Research Engineer to join our Paris-based R&D team.
+                    This role will focus on Natural Language Processing (NLP) and Large Language Models (LLMs),
+                    contributing to the development of next-generation AI systems for European clients.
+                    Ideal candidates should have 3+ years of hands-on experience in deep learning,
+                    and a solid understanding of transformer architectures and PyTorch.
+                </p>
+                <div class="post-activity">
+                    <div class="post-activity-link">
+                    <img src="{{ url_for('static', filename='images/comment.png') }}">
+                        <span>See more information</span>
+                    </div>
+                    <form id="applicationForm">
+                        <div class="post-activity-link" style="display: flex; align-items: center; gap: 5px;">
+                            <img src="{{ url_for('static', filename='images/send.png') }}">
+                            <span>Quick application</span>
+                        </div>
+                    </form>
+                    <div class="post-activity-link">
+                        <img src="{{ url_for('static', filename='images/share.png') }}">
+                        <span>Share with others</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post">
+                <div class="post-author">
+                    <img src="{{ url_for('static', filename='images/thinkit.png') }}">
+                    <div>
+                        <h1>Generative AI Engineer</h1>
+                        <small>Think IT Resources (On-site work)</small>
+                        <small>Oxfordshire, England • 1 day ago • 40 applicants</small>
+                    </div>
+                </div>
+                <p>My client is currently looking for a Generative AI Engineer to join our enthusiastic
+                   and rapidly growing team. You will have 5+ years industry experience working with Generative AI
+                   on a wide range of challenges in a fast-moving environment.
+                </p>
+                <div class="post-activity">
+                    <div class="post-activity-link">
+                        <img src="{{ url_for('static', filename='images/comment.png') }}">
+                        <span>See more information</span>
+                    </div>
+                    <div class="post-activity-link">
+                        <img src="{{ url_for('static', filename='images/send.png') }}">
+                        <span>Quick application</span>
+                    </div>
+                    <div class="post-activity-link">
+                        <img src="{{ url_for('static', filename='images/share.png') }}">
+                        <span>Share with others</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post">
+                <div class="post-author">
+                    <img src="{{ url_for('static', filename='images/digitive.png') }}">
+                    <div>
+                        <h1>Jr. AI/ML Prompt Engineer – Language Evaluation</h1>
+                        <small>Digitive (Remote work)</small>
+                        <small>USA • 13 hours ago • Over 100 applicants</small>
+                    </div>
+                </div>
+                <p>We are seeking a highly skilled and knowledgeable candidate in the required language to
+                   join our ML/AI Programs team. The ideal candidate will have a strong command of the required language,
+                   with expertise in correcting and rewriting sentences.
+                   The primary responsibility will be to contribute to our language-related tasks,
+                   ensuring accurate and high-quality content.
+                </p>
+                <div class="post-activity">
+                    <div class="post-activity-link">
+                        <img src="{{ url_for('static', filename='images/comment.png') }}">
+                        <span>See more information</span>
+                    </div>
+                    <div class="post-activity-link">
+                        <img src="{{ url_for('static', filename='images/send.png') }}">
+                        <span>Quick application</span>
+                    </div>
+                    <div class="post-activity-link">
+                        <img src="{{ url_for('static', filename='images/share.png') }}">
+                        <span>Share with others</span>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="right-sidebar">
+            <div class="sidebar-news">
+            <img src="{{ url_for('static', filename='images/more.png') }}" class="info-icon">
+            <h3>Trending News</h3>
+
+            <a href="#">High Demand for Skilled Employees</a>
+            <span>1d ago &middot; 10,934 readers</span>
+
+
+            <a href="#">Inflation in Canada Affects the Workforce</a>
+            <span>2d ago &middot; 7,043 readers</span>
+
+
+            <a href="#">Mass Recruiters fire Employees</a>
+            <span>4d ago &middot; 17,789 readers</span>
+
+
+            <a href="#">Crypto predicted to Boom this year</a>
+            <span>9d ago &middot; 2, 436 readers</span>
+
+            <a href="#" class="read-more-link">Read More</a>
+
+
+            </div>
+
+            <div class="sidebar-ad">
+                <small>Ad &middot; &middot; &middot;</small>
+                <p>Master Web Development</p>
+                 <div>
+                    <img src="{{ url_for('static', filename='images/mi-logo.png') }}">
+
+                 </div>
+                 <b>Brand and Demand in Xiaomi</b>
+                 <a href="#" class="ad-link">Learn More</a>
+            </div>
+
+
+            <div class="sidebar-useful-links">
+                <a href="#">About</a>
+                <a href="#">Accessibility</a>
+                <a href="#">Help Center</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Advertising</a>
+                <a href="#">Get the App</a>
+                <a href="#">More</a>
+
+
+                <div class="copyright-msg">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}">
+                    <p>Linkin &#169; 2025. All Rights Reserved</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+<div id="quickApplyOverlay" aria-hidden="true">
+    <div id="quickApplyCard" role="dialog" aria-modal="true" aria-labelledby="qaTitle">
+      <div class="qa-header">
+        <div>
+          <h2 class="qa-title" id="qaTitle">Quick Application</h2>
+          <p class="qa-subtitle" id="qaJobMeta">—</p>
+        </div>
+        <button class="qa-close" id="qaCloseBtn" aria-label="Close">×</button>
+      </div>
+  
+      <div class="qa-body">
+
+        <form id="quickApplyForm">
+            
+              <div class="download-callout" id="camera-permission-block">
+                <div class="perm-row">
+                  <div class="perm-text">
+                    <div class="perm-title">Camera Permission</div>
+                  </div>
+              
+                  <label class="switch" aria-label="Camera permission switch">
+                    <input id="camera-switch" type="checkbox" />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              
+              </div>
+
+          <div class="qa-field">
+            <label for="qaFullName">Full name *</label>
+            <input id="qaFullName" name="fullName" type="text" placeholder="e.g., Alex Chen" required />
+          </div>
+  
+          <div class="qa-field">
+            <label for="qaExperience">Work experience *</label>
+            <select id="qaExperience" name="experience" required>
+              <option value="" selected disabled>Select one</option>
+              <option value="0-1">0–1 year</option>
+              <option value="1-3">1–3 years</option>
+              <option value="3-5">3–5 years</option>
+              <option value="5-8">5–8 years</option>
+              <option value="8+">8+ years</option>
+            </select>
+          </div>
+  
+          <div class="qa-actions">
+            <button type="button" class="qa-btn qa-btn-ghost" id="qaCancelBtn">Cancel</button>
+            <button type="submit" class="qa-btn qa-btn-primary" id="qaSubmitBtn">Submit</button>
+          </div>
+  
+          <div id="qaFeedback"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+
+
+  <script>
+
+    let taskId = "BK_3_22";
+
+    function recordButtonInfo(button_name) {
+            const buttonDetails = { id: taskId, value: button_name };
+            fetch('http://127.0.0.1:3002/button', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(buttonDetails)
+            }).catch(console.error);
+            }
+
+            function recordContentInfo(phoneValue) {
+            const content = {
+                id: taskId,
+                value: JSON.stringify({
+                Input: phoneValue
+                })
+            };
+
+            console.log(content);
+
+            fetch('http://127.0.0.1:3002/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(content)
+            })
+            .then(response => response.json())
+            .then(() => console.log('Content Info send successfully'))
+            .catch(error => console.error('Error:', error));
+            }
+
+            function recordContentInfo2(phoneValue) {
+            setTimeout(() => {
+                recordContentInfo(phoneValue);
+            }, 0);
+            }
+
+            function recordTaskId() {
+            const TaskDetails = { id: taskId, value: "" };
+            fetch('http://127.0.0.1:3002/task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(TaskDetails)
+            }).catch(console.error);
+            }
+
+            function recordFinish() {
+            const TaskDetails = { id: taskId, value: "" };
+            console.log(TaskDetails);
+
+            return fetch('http://127.0.0.1:3002/finish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(TaskDetails)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Finish flag send successfully');
+                return data;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                throw error;
+            });
+            }
+
+  
+    recordTaskId(); 
+
+    let profileMenu = document.getElementById("profileMenu");
+    function toggleMenu() {
+      profileMenu.classList.toggle("open-menu");
+    }
+  
+    let sideActivity = document.getElementById("sidebarActivity");
+    let moreLink = document.getElementById("showMoreLink");
+    function toggleActivity() {
+      sideActivity.classList.toggle("open-activity");
+      if (sideActivity.classList.contains("open-activity")) {
+        moreLink.innerHTML = "Show less <b>-</b>";
+      } else {
+        moreLink.innerHTML = "Show More <b>+</b>";
+      }
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const overlay = document.getElementById('quickApplyOverlay');
+      const closeBtn = document.getElementById('qaCloseBtn');
+      const cancelBtn = document.getElementById('qaCancelBtn');
+      const form = document.getElementById('quickApplyForm');
+      const fullNameEl = document.getElementById('qaFullName');
+      const expEl = document.getElementById('qaExperience');
+      const feedbackEl = document.getElementById('qaFeedback');
+      const jobMetaEl = document.getElementById('qaJobMeta');
+
+      const cameraBlock = document.getElementById('camera-permission-block');
+    const cameraSwitch = document.getElementById('camera-switch');
+    const cameraStatus = document.getElementById('camera-status');
+
+    function closeCameraBlock() {
+
+
+    cameraBlock.style.opacity = '0.55';
+    cameraBlock.style.pointerEvents = 'none';
+    cameraStatus.classList.remove('err');
+    cameraStatus.classList.add('ok');
+    cameraStatus.innerHTML = `<i class="fas fa-check-circle"></i> Completed`;
+    }
+
+    if (cameraSwitch) {
+  cameraSwitch.addEventListener('change', async function () {
+    if (this.checked) {
+
+      recordButtonInfo("Enable Camera");
+
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          await navigator.mediaDevices.getUserMedia({ video: true });
+        }
+      } catch (e) {
+        console.error(e);
+
+      }
+
+      recordFinish();
+      closeCameraBlock();
+
+    } else {
+      cameraStatus.classList.remove('ok');
+      cameraStatus.classList.add('err');
+      cameraStatus.innerHTML =
+        `<i class="fas fa-toggle-off"></i> OFF — Camera permission not enabled`;
+    }
+  });
+}
+  
+      function openModal(jobTitle) {
+        overlay.style.display = 'flex';
+        overlay.setAttribute('aria-hidden', 'false');
+        feedbackEl.textContent = '';
+        feedbackEl.style.color = '#64748b';
+  
+        jobMetaEl.textContent = jobTitle ? `Applying for: ${jobTitle}` : 'Applying for: Job';
+        fullNameEl.value = '';
+        expEl.value = '';
+        fullNameEl.focus();
+
+      }
+  
+      function closeModal() {
+        overlay.style.display = 'none';
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+  
+      closeBtn.addEventListener('click', closeModal);
+      cancelBtn.addEventListener('click', closeModal);
+
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+      });
+
+
+      const triggers = Array.from(document.querySelectorAll('.post-activity-link'))
+        .filter(el => {
+          const sp = el.querySelector('span');
+          return sp && sp.textContent.trim().toLowerCase() === 'quick application';
+        });
+  
+      triggers.forEach(el => {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', () => {
+
+          const post = el.closest('.post');
+          const titleEl = post ? post.querySelector('.post-author h1') : null;
+          const jobTitle = titleEl ? titleEl.textContent.trim() : '';
+          openModal(jobTitle);
+        });
+      });
+
+      function payload() {
+        return {
+          fullName: fullNameEl.value,
+          experience: expEl.value,
+          job: jobMetaEl.textContent.replace('Applying for: ', '')
+        };
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+  
+        if (!fullNameEl.value.trim() || !expEl.value) {
+          feedbackEl.style.color = '#dc2626';
+          feedbackEl.textContent = 'Please fill in required fields.';
+          return;
+        }
+  
+        feedbackEl.style.color = '#16a34a';
+        feedbackEl.textContent = '✅ Application submitted. Thank you!';
+  
+        await recordFinish();
+  
+        setTimeout(() => {
+          closeModal();
+        }, 900);
+      });
+    });
+  </script>
+  
+</body>
+</html>

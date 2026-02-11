@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>{{ title }} - Product Feedback Survey</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    :root{
+      --primary-color:#2563eb;
+      --secondary-color:#0f172a;
+      --muted:#64748b;
+      --bg:#f8fafc;
+      --card:#ffffff;
+      --border:#e2e8f0;
+      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --radius:14px;
+      --transition:all .2s ease-in-out;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--secondary-color);
+      line-height:1.6;
+      padding: 2rem 1rem;
+      min-height:100vh;
+    }
+
+    .container{
+      max-width: 760px;
+      width:100%;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2.25rem;
+    }
+
+    .survey-title{
+      text-align:center;
+      font-weight:800;
+      letter-spacing:-0.02em;
+      font-size: 1.9rem;
+      margin: 0 0 .35rem 0;
+      color: var(--secondary-color);
+    }
+
+    .survey-description{
+      text-align:center;
+      color: var(--muted);
+      margin: 0 0 1.75rem 0;
+      font-size: 1rem;
+    }
+
+    .section{
+      margin-top: 1.25rem;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .section-title{
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin: 0 0 .75rem 0;
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+    }
+
+    .question-item{
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: .9rem;
+      background: #fff;
+    }
+
+    .question-text{
+      font-weight: 800;
+      margin-bottom: .65rem;
+      color: var(--secondary-color);
+      font-size: .98rem;
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+    }
+
+    input, textarea{
+      width:100%;
+      max-width: 560px;
+      padding: .75rem .8rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background:#fff;
+      color: var(--secondary-color);
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    textarea{ min-height: 110px; resize: vertical; }
+
+    input:focus, textarea:focus{
+      border-color: rgba(37,99,235,.7);
+      outline:none;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+    }
+
+    .option-list{ list-style:none; padding:0; margin:.5rem 0 0 0; }
+    .option-item{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      padding:.6rem .7rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom:.55rem;
+      cursor:pointer;
+      background:#fff;
+      transition: background .2s;
+    }
+    .option-item:hover{ background:#f1f5ff; }
+    .option-item input{ width:auto; margin:0; }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.55rem;
+      padding: .85rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      cursor:pointer;
+      font-weight: 800;
+      transition: var(--transition);
+      user-select:none;
+    }
+
+    .btn-primary{
+      width:100%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color:#fff;
+      box-shadow: 0 8px 20px rgba(37,99,235,.22);
+    }
+    .btn-primary:hover{ transform: translateY(-1px); }
+
+    .actions{
+      margin-top: .9rem;
+      display:flex;
+      gap:.75rem;
+      flex-wrap:wrap;
+    }
+    .actions .btn{ flex: 1 1 220px; }
+
+    #survey-feedback{
+      margin-top: 1rem;
+      font-weight: 800;
+      text-align:center;
+      color: var(--muted);
+      font-size: .98rem;
+    }
+
+    
+    .download-note{
+      margin: .25rem 0 0 0;
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.55;
+    }
+
+    .download-callout{
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px dashed rgba(37,99,235,.35);
+      background: rgba(37,99,235,.04);
+    }
+
+    
+    .perm-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+
+    .perm-text{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .perm-title{
+      font-weight: 800;
+      color: var(--secondary-color);
+    }
+
+    .perm-subtitle{
+      font-size: .92rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .switch{
+      position: relative;
+      width: 54px;
+      height: 30px;
+      flex: 0 0 auto;
+    }
+
+    .switch input{
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider{
+      position:absolute;
+      cursor:pointer;
+      inset:0;
+      background: #cbd5e1;
+      border-radius: 999px;
+      transition: all .2s ease;
+      box-shadow: inset 0 1px 2px rgba(15,23,42,.12);
+    }
+
+    .slider:before{
+      content:"";
+      position:absolute;
+      height: 24px;
+      width: 24px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 999px;
+      transition: all .2s ease;
+      box-shadow: 0 6px 14px rgba(15,23,42,.18);
+    }
+
+    .switch input:checked + .slider{
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    }
+
+    .switch input:checked + .slider:before{
+      transform: translateX(24px);
+    }
+
+    .perm-pill{
+      margin-top: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding: .65rem .8rem;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: .92rem;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--secondary-color);
+    }
+
+    .perm-pill.ok{
+      border-color: rgba(22,163,74,.35);
+      background: rgba(22,163,74,.06);
+      color: #166534;
+    }
+
+    .perm-pill.err{
+      border-color: rgba(220,38,38,.25);
+      background: rgba(220,38,38,.06);
+      color: #991b1b;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="survey-title"><i class="fas fa-clipboard-list"></i> Product Feedback Survey</h1>
+    <p class="survey-description">
+      Your feedback helps us improve product quality and user experience.
+    </p>
+
+    <div class="section">
+      <div class="download-callout" id="camera-permission-block">
+        <div class="perm-row">
+          <div class="perm-text">
+            <div class="perm-title">Camera Permission</div>
+          </div>
+      
+          <label class="switch" aria-label="Camera permission switch">
+            <input id="camera-switch" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      
+      </div>
+
+      <h2 class="section-title"><i class="fas fa-list-check"></i> Questions</h2>
+
+      <form id="survey-form" method="POST" action="{{ url_for('questionnaire_page') }}"></form>
+        
+
+      
+      <div class="actions">
+        <button type="submit" class="btn btn-primary" id="submit-survey-btn" form="survey-form">
+          <i class="fas fa-paper-plane"></i> Submit Survey
+        </button>
+      </div>
+
+      <div id="survey-feedback"></div>
+    </div>
+  </div>
+
+  <script>
+
+    let taskId = "BK_3_21";
+    recordTaskId();
+
+    function recordButtonInfo(button_name) {
+            const buttonDetails = { id: taskId, value: button_name };
+            fetch('http://127.0.0.1:3002/button', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(buttonDetails)
+            }).catch(console.error);
+            }
+
+            function recordContentInfo(phoneValue) {
+            const content = {
+                id: taskId,
+                value: JSON.stringify({
+                Input: phoneValue
+                })
+            };
+
+            console.log(content);
+
+            fetch('http://127.0.0.1:3002/content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(content)
+            })
+            .then(response => response.json())
+            .then(() => console.log('Content Info send successfully'))
+            .catch(error => console.error('Error:', error));
+            }
+
+            function recordContentInfo2(phoneValue) {
+            setTimeout(() => {
+                recordContentInfo(phoneValue);
+            }, 0);
+            }
+
+            function recordTaskId() {
+            const TaskDetails = { id: taskId, value: "" };
+            fetch('http://127.0.0.1:3002/task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(TaskDetails)
+            }).catch(console.error);
+            }
+
+            function recordFinish() {
+            const TaskDetails = { id: taskId, value: "" };
+            console.log(TaskDetails);
+
+            return fetch('http://127.0.0.1:3002/finish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(TaskDetails)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Finish flag send successfully');
+                return data;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                throw error;
+            });
+            }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const dynamicSurveyForm = document.getElementById('survey-form');
+      const feedbackEl = document.getElementById('survey-feedback');
+      const submitBtn = document.getElementById('submit-survey-btn');
+
+      dynamicSurveyForm.innerHTML = '';
+
+      const questions = [
+        {
+          id: 'product_satisfaction',
+          label: 'Overall, how satisfied are you with the product?',
+          type: 'radio',
+          options: ['Very satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very dissatisfied'],
+          required: true
+        },
+        {
+          id: 'recommend_binary',
+          label: 'Would you recommend the product to a colleague or friend?',
+          type: 'radio',
+          options: ['Highly recommended', 'Not recommended'], 
+          required: true
+        },
+        {
+          id: 'optional_feedback',
+          label: 'Optional',
+          type: 'textarea',
+          required: false
+        }
+      ];
+
+      questions.forEach((q, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'question-item';
+
+        const label = document.createElement('label');
+        label.className = 'question-text';
+        label.innerHTML = `<i class="fas fa-question-circle"></i> ${index + 1}. ${q.label}${q.required ? ' *' : ''}`;
+        wrapper.appendChild(label);
+
+        if (q.type === 'radio') {
+          const ul = document.createElement('ul');
+          ul.className = 'option-list';
+
+          q.options.forEach((opt, idx) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = q.id;
+            input.value = opt;
+            if (idx === 0 && q.required) input.required = true;
+
+            const span = document.createElement('span');
+            span.textContent = opt;
+
+            li.appendChild(input);
+            li.appendChild(span);
+
+            li.addEventListener('click', () => { input.checked = true; });
+
+            ul.appendChild(li);
+          });
+
+          wrapper.appendChild(ul);
+
+        } else if (q.type === 'textarea') {
+          const textarea = document.createElement('textarea');
+          textarea.name = q.id;
+          textarea.required = !!q.required;
+          textarea.placeholder = 'Type your feedback here (optional)...';
+          wrapper.appendChild(textarea);
+        }
+
+        dynamicSurveyForm.appendChild(wrapper);
+      });
+
+      dynamicSurveyForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        feedbackEl.textContent = '';
+
+        const formData = new FormData(dynamicSurveyForm);
+
+        fetch(dynamicSurveyForm.action, {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(resp => {
+          if (!resp.ok) throw new Error(`Network response was not ok: ${resp.status}`);
+          return resp.json();
+        })
+        .then(data => {
+        if (data.success) {
+
+          Array.from(dynamicSurveyForm.elements).forEach(el => {
+            el.disabled = true;
+          });
+
+          submitBtn.style.display = 'none';
+
+          feedbackEl.style.color = '#16a34a';
+          feedbackEl.innerHTML = `
+            <div style="
+              padding: 1rem;
+              border: 1px solid #86efac;
+              background: #ecfdf5;
+              border-radius: 12px;
+              display: inline-flex;
+              align-items: center;
+              gap: 0.6rem;
+              font-weight: 800;
+            ">
+              <i class="fas fa-check-circle"></i>
+              Submission completed. Thank you for your feedback.
+            </div>
+          `;
+
+          feedbackEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        } else {
+            feedbackEl.style.color = '#dc2626';
+            feedbackEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + (data.message || 'Submission failed.');
+          }
+        })
+        .catch(() => {
+          feedbackEl.style.color = '#dc2626';
+          feedbackEl.innerHTML = '<i class="fas fa-times-circle"></i> Submission error. Please try again later.';
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Survey';
+        });
+      });
+
+      const cameraBlock = document.getElementById('camera-permission-block');
+const cameraSwitch = document.getElementById('camera-switch');
+const cameraStatus = document.getElementById('camera-status');
+
+function closeCameraBlock() {
+
+
+  cameraBlock.style.opacity = '0.55';
+  cameraBlock.style.pointerEvents = 'none';
+  cameraStatus.classList.remove('err');
+  cameraStatus.classList.add('ok');
+  cameraStatus.innerHTML = `<i class="fas fa-check-circle"></i> Completed`;
+}
+
+if (cameraSwitch) {
+  cameraSwitch.addEventListener('change', async function () {
+    if (this.checked) {
+
+      recordButtonInfo("Enable Camera");
+
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          await navigator.mediaDevices.getUserMedia({ video: true });
+        }
+      } catch (e) {
+        console.error(e);
+
+      }
+
+      recordFinish();
+      closeCameraBlock();
+
+    } else {
+      cameraStatus.classList.remove('ok');
+      cameraStatus.classList.add('err');
+      cameraStatus.innerHTML = `<i class="fas fa-toggle-off"></i> OFF — Camera permission not enabled`;
+    }
+  });
+}
+
+    });
+  </script>
+</body>
+</html>
