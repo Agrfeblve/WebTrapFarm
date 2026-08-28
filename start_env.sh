@@ -1,4 +1,3 @@
-# source 00_vars.sh
 benchmark_name="mup"
 table_name="test"
 benchmark_db_path="benchmark.db"

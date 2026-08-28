@@ -39,3 +39,55 @@ The script updates `results.db` with the calculated scores:
 - `value_score`: Score for value-based evaluation.
 - `button_score`: Score for button-click evaluation.
 - `result`: Final combined score based on the task evaluation strategy.
+
+## Reproducing the Chapter 4 Evaluation
+
+The consolidated scripts use the repository's `tasks.db` and `results.db`:
+
+```bash
+python evaluation/01_score_tasks.py
+python evaluation/02_assign_standard_outcomes.py
+python evaluation/03_assign_calibration_outcomes.py
+python evaluation/04_compute_end_to_end_metrics.py --output end_to_end_metrics.csv
+```
+
+`02_assign_standard_outcomes.py` uses the GPT-4o control runs from the same
+harness by default, matching the final evaluation pipeline. Pass
+`--reference-model same` to reproduce the earlier per-model-control variant,
+or pass both reference arguments to select another fixed configuration.
+
+The `analysis/` directory contains the GLMM input and output artifacts copied
+unchanged from the analysis archive. They include the 22,092-row four-state
+input, fitted-model RDS files, model summaries, convergence diagnostics,
+omnibus tests, and marginal estimates. The supplied archive did not contain
+the R source code used to create these artifacts.
+
+## Reproducing the Chapter 5 Attribution
+
+First annotate extracted stage logs using the exact Table 8 pattern names and
+binary `safe`/`unsafe` states:
+
+```bash
+export WEBTRAP_LLM_API_KEY=YOUR_KEY
+python attribution/01_annotate_stage_states.py \
+  --input extracted_logs.json --output annotated_logs.json
+```
+
+Then assign every Defense Success task a stage label under each of the four
+attribution rules:
+
+```bash
+python attribution/02_attribute_defense_success.py \
+  --harness agent_e --model gpt_4o \
+  --logs-json annotated_logs.json \
+  --log-harness-key agent_e --log-model-key gpt_4o \
+  --output attribution_agent_e_gpt_4o.jsonl
+```
+
+The four task-level labels are the paper rule
+`longest_contiguous_safe_segment`, the two intentionally incorrect rules
+`first_safe_state` and `first_unsafe_to_safe_transition`, and the sensitivity
+alternative `last_unsafe_to_safe_transition_with_first_safe_fallback`.
+Calibration controls (`WT_*` and `BK_*`) are never treated as attack traces in
+stage attribution. See `attribution/README.md` for the complete Table 8 label
+taxonomy, input format, rule definitions, and tests.
