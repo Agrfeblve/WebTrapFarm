@@ -1,0 +1,50 @@
+{
+  "llm": {
+    "default_profile": "gpt-5.1",
+    "standalone_profile": "gpt-4o",
+    "profiles": {
+      "Qwen3-VL-235B-A22B-Instruct": {
+        "api_key": "<api_key_1>",
+        "base_url": "<base_url_1>",
+        "model": "Qwen3-VL-235B-A22B-Instruct",
+        "model_name": "Qwen3-VL-235B-A22B-Instruct",
+        "auth_header": "Authorization",
+        "auth_scheme": "Bearer",
+        "endpoint": "/chat/completions",
+        "rate_limit": -1,
+        "temperature": 0
+      },
+      "gpt-5.1": {
+        "api_key": "<api_key_2>",
+        "base_url": "<base_url_2>",
+        "model": "gpt-5.1",
+        "model_name": "gpt-5.1",
+        "auth_header": "Authorization",
+        "auth_scheme": "Bearer",
+        "endpoint": "/chat/completions",
+        "rate_limit": -1,
+        "temperature": 0
+      },
+      "gpt-4o": {
+        "api_key": "<api_key_3>",
+        "base_url": "<base_url_3>",
+        "model": "gpt-4o",
+        "model_name": "gpt-4o",
+        "auth_header": "Authorization",
+        "auth_scheme": "Bearer",
+        "endpoint": "/chat/completions",
+        "rate_limit": -1,
+        "temperature": 0
+      }
+    }
+  },
+  "database": {
+    "result_db_path": "<db_file_path>",
+    "result_table_name": "seeact",
+    "mongodb_uri": "<mongodb_uri>"
+  },
+  "seaweedfs": {
+    "filer_url": "<seaweedfs_url>",
+    "root_dir": "seeact"
+  }
+}
