@@ -1,10 +1,14 @@
-# Stage-State Annotation and Defense Attribution
+# Harness Component Security Analysis
 
-This directory reproduces the Chapter 5 stage-state annotation and task-level
-defense attribution pipeline. It contains no database credentials, private
-paths, or harness-specific result tables.
+This directory contains the stage-wise log analysis and defense-stage
+localization code used in our Harness Component Security Analysis. It contains
+no database credentials, private paths, or harness-specific result tables.
 
-## Table 8 taxonomy
+## Security Analysis Method
+
+### Stage-wise Log Analysis
+
+#### Table 8 state taxonomy
 
 The annotation script emits both the exact Table 8 pattern name and its binary
 state:
@@ -35,7 +39,7 @@ metadata. Stages I, III, and IV use deterministic prompts with temperature
 zero when raw semantic evidence still needs a label. A missing stage is left
 unobserved; it is not automatically classified as safe or unsafe.
 
-## 1. Annotate stage states
+#### Annotate stage states
 
 Input logs use this nesting:
 
@@ -59,12 +63,12 @@ If the input already contains valid Table 8 or supported legacy pattern names,
 the script only normalizes them and adds `safe`/`unsafe` states; no API request
 is made for those stages.
 
-## 2. Assign task-level attribution labels
+### Defense Stage Localization
 
-The attribution script reads Defense Success outcomes from a user-supplied
-SQLite result database. Result databases and collected trajectories are not
-included in this code-only release, and the script does not connect to an
-external database.
+The defense-stage localization script reads Defense Success outcomes from a
+user-supplied SQLite result database. Result databases and collected
+trajectories are not included in this code-only release, and the script does
+not connect to an external database.
 
 ```bash
 python attribution/02_attribute_defense_success.py \
@@ -84,8 +88,8 @@ sensitivity labels:
   selects the first observed safe state. For MPI/DWD/web-side attacks, it
   selects the safe stage entered by the last observed unsafe-to-safe
   transition.
-- `longest_contiguous_safe_segment_legacy`: the former paper rule, retained
-  only for sensitivity analysis.
+- `longest_contiguous_safe_segment_legacy`: an optional sensitivity rule that
+  selects the first stage of the longest contiguous safe segment.
 - `first_safe_state`: the first observed safe stage (and the canonical
   user-side rule).
 - `first_unsafe_to_safe_transition`: the safe stage entered by the first

@@ -44,7 +44,7 @@ The script updates the supplied result database with the calculated scores:
 - `button_score`: Score for button-click evaluation.
 - `result`: Final combined score based on the task evaluation strategy.
 
-## Reproducing the Chapter 4 Evaluation
+## Harness Security Evaluation
 
 The consolidated scripts operate on the experiment databases configured by
 the user. Experimental result databases are not included in this release:
@@ -58,14 +58,14 @@ python evaluation/04_compute_end_to_end_metrics.py --output end_to_end_metrics.c
 
 `02_assign_standard_outcomes.py` uses the GPT-4o control runs from the same
 harness by default, matching the final evaluation pipeline. Pass
-`--reference-model same` to reproduce the earlier per-model-control variant,
+`--reference-model same` to select the earlier per-model-control variant,
 or pass both reference arguments to select another fixed configuration.
 
 The `evaluation/05_glmm/` directory contains the analysis notebooks. Private
 model inputs, fitted artifacts, collected trajectories, and experiment results
 are not part of this code-only release.
 
-## Reproducing the Chapter 5 Attribution
+## Harness Component Security Analysis
 
 First annotate extracted stage logs using the exact Table 8 pattern names and
 binary `safe`/`unsafe` states:
@@ -76,9 +76,9 @@ python attribution/01_annotate_stage_states.py \
   --input extracted_logs.json --output annotated_logs.json
 ```
 
-Then assign every Defense Success task a stage label using the paper's
-attack-surface-specific localization rule, together with explicitly named
-sensitivity rules:
+Then localize the defense stage for every Defense Success task using the
+attack-surface-specific rule, together with explicitly named sensitivity
+rules:
 
 ```bash
 python attribution/02_attribute_defense_success.py \
@@ -93,8 +93,8 @@ The canonical output field is `paper_surface_specific`. It localizes user-side
 attacks at the first observed safe state and web-side attacks at the last
 observed unsafe-to-safe transition. A web-side trace without such a transition
 is left unlocalized (`null`); it does not fall back to the first safe state.
-The former longest-safe-segment method is retained only as
+An additional longest-safe-segment method is retained as
 `longest_contiguous_safe_segment_legacy` for sensitivity analysis.
 Calibration controls (`WT_*` and `BK_*`) are never treated as attack traces in
-stage attribution. See `attribution/README.md` for the complete Table 8 label
-taxonomy, input format, and rule definitions.
+defense-stage localization. See `attribution/README.md` for the complete Table
+8 label taxonomy, input format, and localization rules.
