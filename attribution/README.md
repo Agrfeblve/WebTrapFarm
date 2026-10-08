@@ -59,13 +59,16 @@ If the input already contains valid Table 8 or supported legacy pattern names,
 the script only normalizes them and adds `safe`/`unsafe` states; no API request
 is made for those stages.
 
-## 2. Assign four task-level attribution labels
+## 2. Assign task-level attribution labels
 
-The attribution script reads Defense Success outcomes from the repository's
-SQLite `results.db`. It does not connect to an external database.
+The attribution script reads Defense Success outcomes from a user-supplied
+SQLite result database. Result databases and collected trajectories are not
+included in this code-only release, and the script does not connect to an
+external database.
 
 ```bash
 python attribution/02_attribute_defense_success.py \
+  --results-db /path/to/results.db \
   --harness agent_e \
   --model gpt_4o \
   --logs-json annotated_logs.json \
@@ -74,24 +77,24 @@ python attribution/02_attribute_defense_success.py \
   --output attribution_agent_e_gpt_4o.jsonl
 ```
 
-Each output record contains four independent activation-stage labels:
+Each output record contains the canonical paper label and several transparent
+sensitivity labels:
 
-- `longest_contiguous_safe_segment`: the paper rule. For MUP, it selects the
-  first stage of the longest safe segment. For MPI/DWD, that segment must be
-  immediately preceded by an observed unsafe state.
-- `first_safe_state`: the first observed safe stage.
+- `paper_surface_specific`: the paper rule. For MUP/user-side attacks, it
+  selects the first observed safe state. For MPI/DWD/web-side attacks, it
+  selects the safe stage entered by the last observed unsafe-to-safe
+  transition.
+- `longest_contiguous_safe_segment_legacy`: the former paper rule, retained
+  only for sensitivity analysis.
+- `first_safe_state`: the first observed safe stage (and the canonical
+  user-side rule).
 - `first_unsafe_to_safe_transition`: the safe stage entered by the first
   observed unsafe-to-safe transition.
-- `last_unsafe_to_safe_transition_with_first_safe_fallback`: the safe stage
-  entered by the last observed unsafe-to-safe transition; if no transition
-  exists, it falls back to the first safe stage.
+- `last_unsafe_to_safe_transition`: the safe stage entered by the last
+  observed unsafe-to-safe transition (and the canonical web-side rule). If no
+  such transition exists, the task is unlocalized (`null`).
 
-Equal-length safe segments are resolved in favor of the earlier segment.
+For the legacy longest-segment sensitivity rule, equal-length safe segments are
+resolved in favor of the earlier segment.
 Unlocalizable tasks receive JSON `null`; they are never forced into Stage IV.
 Calibration controls with `WT_*` or `BK_*` identifiers are excluded.
-
-## Tests
-
-```bash
-python -m unittest discover -s attribution/tests -v
-```

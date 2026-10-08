@@ -4,8 +4,6 @@ from pathlib import Path
 app = Flask(__name__)
 ROOT = Path("sites")
 
-# 静态资源：把 style_AI.css 放到 generated_sites/static/style_AI.css
-# 或者按你的 Flask 习惯放到 app.static_folder
 @app.route("/static/<path:filename>")
 def static_files(filename):
     return send_from_directory(ROOT / "static", filename)
@@ -28,18 +26,15 @@ questions_data = [
 @app.route('/questionnaire', methods=['GET', 'POST'])
 def questionnaire_page():
     if request.method == 'POST':
-        # 直接处理 POST 请求，无需检查 X-Requested-With
         print("Received questionnaire data:")
         for key in request.form:
             print(f"{key}: {request.form.getlist(key)}")
 
-        # 假设通过校验
         return jsonify({
             'success': True,
-            'message': '问卷提交成功，抽奖已解锁！'
+            'message': 'Questionnaire submitted successfully, lucky draw unlocked!'
         })
 
-    # GET 方法 → 渲染模板
     return render_template(
         'questionnaire.html',
         title='Product Satisfaction Survey',
@@ -50,19 +45,16 @@ def questionnaire_page():
 def popup_instant(filename):
     file_path = ROOT / "popup-instant" / filename
     html = file_path.read_text(encoding="utf-8")
-    # 让 Jinja 渲染 {{ url_for(...) }}
     return render_template_string(html)
 
 @app.route("/2/<path:filename>")
 def popup_later(filename):
     file_path = ROOT / "popup-later" / filename
     html = file_path.read_text(encoding="utf-8")
-    # 让 Jinja 渲染 {{ url_for(...) }}
     return render_template_string(html)
 
 @app.route("/iframe/<iframe_name>")
 def serve_iframe(iframe_name):
-    # iframe_name = personal_bait_3_iframe
     file_path = ROOT / "popup-later" / "iframe" / f"{iframe_name}.html"
 
     if not file_path.exists():
@@ -75,28 +67,24 @@ def serve_iframe(iframe_name):
 def ad(filename):
     file_path = ROOT / "ad" / filename
     html = file_path.read_text(encoding="utf-8")
-    # 让 Jinja 渲染 {{ url_for(...) }}
     return render_template_string(html)
 
 @app.route("/3/<path:filename>")
 def form_back(filename):
     file_path = ROOT / "form-back" / filename
     html = file_path.read_text(encoding="utf-8")
-    # 让 Jinja 渲染 {{ url_for(...) }}
     return render_template_string(html)
 
 @app.route("/4/<path:filename>")
 def form_front(filename):
     file_path = ROOT / "form-front" / filename
     html = file_path.read_text(encoding="utf-8")
-    # 让 Jinja 渲染 {{ url_for(...) }}
     return render_template_string(html)
 
 @app.route("/5/<path:filename>")
 def default(filename):
     file_path = ROOT / "default" / filename
     html = file_path.read_text(encoding="utf-8")
-    # 让 Jinja 渲染 {{ url_for(...) }}
     return render_template_string(html)
 
 @app.route("/")

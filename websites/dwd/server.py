@@ -8,31 +8,23 @@ import json
 import aiosqlite
 import argparse
 
-###########################################################################
-# 1. 创建记录器（Logger）
 logger = logging.getLogger('my_server')
-logger.setLevel(logging.DEBUG)  # 设置记录器级别
+logger.setLevel(logging.DEBUG)
 
-# 2. 创建处理器（Handler）- 控制台输出
 console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.DEBUG)  # 控制台显示DEBUG及以上级别
+console_handler.setLevel(logging.DEBUG)
 
-# 3. 创建处理器（Handler）- 文件输出（支持日志轮换）
 from logging import FileHandler
 file_handler = FileHandler('server.log')
-file_handler.setLevel(logging.DEBUG)  # 文件记录所有DEBUG及以上级别
+file_handler.setLevel(logging.DEBUG)
 
-# 4. 创建格式化器（Formatter）
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s')
 console_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)
 
-# 5. 将处理器添加到记录器
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
-###########################################################################
 
-# 数据库配置
 # db_path = r"result.db"
 # agent_name = "human"
 # benchmark = "dwd"
@@ -49,16 +41,14 @@ agent_name = args.agent_name
 db_path = args.db_path
 benchmark = args.benchmark_name
 
-# 创建 FastAPI 应用实例
 app = FastAPI(title="My API", description="API for saving emails and tweets")
 
-# 配置 CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # 允许所有方法（GET, POST 等）
-    allow_headers=["*"],  # 允许所有请求头
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # 定义请求体模型
@@ -66,19 +56,12 @@ class RequestData(BaseModel):
     id: str = ""
     value: str = ""
 
-##### 数据库存储的逻辑说明
-#####
-##### 1. 当Agent首次前往该任务对应的起始网站时，在数据库中添加这一task_id。把数据库中该task_id对应的content和button记录清空。
-##### 2. 当该网站监听到相关value时，在数据库中记录content。原有content会被新content覆盖。
-##### 3. 当该网站监听到相关button的点击时，在数据库中记录相关button对应的名称。这里的记录方式是在原有记录的基础上追加，因此原有的button信息不会丢失。
-
 @app.post("/task")
 async def task(request_data: RequestData):
     logger.debug(f"request_data: {request_data}")
     id = request_data.id
     
     async with aiosqlite.connect(db_path) as db:
-        # 检查任务是否已完成
         async with db.execute(f"""
             SELECT finish FROM {agent_name} WHERE task_id = ?
         """, (id,)) as cursor:
@@ -89,12 +72,10 @@ async def task(request_data: RequestData):
             if finish:
                 return {"status": "success", "message": "Task is finished"}
             else:
-                # 未完成任务 → 清除旧记录
                 await db.execute(f"""
                     DELETE FROM {agent_name} WHERE task_id = ?
                 """, (id,))
 
-        # ★ 插入包含 benchmark 的新任务记录
         await db.execute(f"""
             INSERT INTO {agent_name} (task_id, benchmark, finish)
             VALUES (?, ?, ?)
@@ -110,14 +91,12 @@ async def finish(request_data: RequestData):
     
     try:
         async with aiosqlite.connect(db_path) as db:
-            # 1. 检查任务是否已完成
             async with db.execute(f"""
                 SELECT finish FROM {agent_name} WHERE task_id = ?
             """, (id,)) as cursor:
                 row = await cursor.fetchone()
 
             if not row:
-                # 任务ID不存在，或者读取错误（但上下文管理器应清理）
                 logger.error(f"Task ID not found or error during initial read [AGENT_NAME={agent_name}, TASK_ID={id}]")
                 raise HTTPException(status_code=404, detail="Task ID not found")
             
@@ -125,14 +104,12 @@ async def finish(request_data: RequestData):
             if finish:
                 return {"status": "success", "message": "Task is finished"}
 
-            # 2. 读取 value
             async with db.execute(f"""
                 SELECT value FROM {agent_name} WHERE task_id = ?
             """, (id,)) as cursor:
                 row = await cursor.fetchone()
             
             if not row:
-                # 逻辑上不应该发生，但作为安全措施
                 logger.error(f"Value row not found after initial check [AGENT_NAME={agent_name}, TASK_ID={id}]")
                 raise HTTPException(status_code=404, detail="Internal Error: Task value missing")
                 
@@ -141,16 +118,14 @@ async def finish(request_data: RequestData):
             if value is None or value == "" or value == "{}":
                 return {"status": "success", "message": "Content info received"}
             else:
-                # 3. 更新 finish 标记
                 await db.execute(f"""
                     UPDATE {agent_name} SET finish = ? WHERE task_id = ?
                 """, (True, id))
-                await db.commit()  # 异步提交
+                await db.commit()
 
         return {"status": "success", "message": "Finish flag received"}
         
     except Exception as general_error:
-        # 捕获任何未预料到的异常，记录它
         logger.error(f"Unhandled error in /finish for task {id}: {general_error}", exc_info=True)
         raise HTTPException(
             status_code=500,
@@ -162,9 +137,7 @@ async def content(request_data: RequestData):
     logger.debug(f"request_data: {request_data}")
     id = request_data.id
 
-    # 数据库存储的代码
     async with aiosqlite.connect(db_path) as db:
-        # 检查任务是否已完成
         async with db.execute(f"""
             SELECT finish FROM {agent_name} WHERE task_id = ?
         """, (id,)) as cursor:
@@ -180,7 +153,6 @@ async def content(request_data: RequestData):
         if finish:
             return {"status": "success", "message": "Task is finished"}
 
-        # 读取原value字符串，解析成json_obj
         async with db.execute(f"""
             SELECT value FROM {agent_name} WHERE task_id = ?
         """, (id,)) as cursor:
@@ -193,7 +165,7 @@ async def content(request_data: RequestData):
                 try:
                     old_value_obj = json.loads(old_value_str)
                 except json.JSONDecodeError:
-                    old_value_obj = {} # 如果旧数据格式错误，则重置
+                    old_value_obj = {}
         else:
             logger.error(f"Error when updating content [AGENT_NAME={agent_name}, TASK_ID={id}]: Row not found.")
             raise HTTPException(
@@ -201,7 +173,6 @@ async def content(request_data: RequestData):
                 detail="Internal Server Error"
             )
 
-        # 更新json_obj：合并新数据
         try:
             new_dict_str = request_data.value
             new_dict_obj = json.loads(new_dict_str)
@@ -215,11 +186,10 @@ async def content(request_data: RequestData):
 
         new_value_str = json.dumps(new_value_obj, ensure_ascii=False)
 
-        # 存储更新后的json_obj
         await db.execute(f"""
             UPDATE {agent_name} SET value = ? WHERE task_id = ?
         """, (new_value_str, id))
-        await db.commit()  # 异步提交，不阻塞
+        await db.commit()
 
     return {"status": "success", "message": "Content info received"}
 
@@ -228,9 +198,7 @@ async def button(request_data: RequestData):
     logger.debug(f"request_data: {request_data}")
     id = request_data.id
 
-    # 数据库存储的代码
     async with aiosqlite.connect(db_path) as db:
-        # 检查任务是否已完成
         async with db.execute(f"""
             SELECT finish FROM {agent_name} WHERE task_id = ?
         """, (id,)) as cursor:
@@ -246,7 +214,6 @@ async def button(request_data: RequestData):
         if finish:
             return {"status": "success", "message": "Task is finished"}
 
-        # 读取原button字符串，解析成button_list
         async with db.execute(f"""
             SELECT button FROM {agent_name} WHERE task_id = ?
         """, (id,)) as cursor:
@@ -263,17 +230,15 @@ async def button(request_data: RequestData):
                 status_code=500,
                 detail="Internal Server Error"
             )
-        
-        # 只有新按钮未被记录时才追加
+
         if request_data.value not in clicked_button_list:
             clicked_button_list.append(request_data.value)
             clicked_button_str = ",".join(clicked_button_list)
 
-            # 存储更新后的button字符串
             await db.execute(f"""
                 UPDATE {agent_name} SET button = ? WHERE task_id = ?
             """, (clicked_button_str, id))
-            await db.commit()  # 异步提交，不阻塞
+            await db.commit()
 
     return {"status": "success", "message": "Button info received"}
 
@@ -282,9 +247,7 @@ async def content_with_key(request_data: RequestData):
     logger.debug(f"request_data: {request_data}")
     id = request_data.id
 
-    # 数据库存储的代码
     async with aiosqlite.connect(db_path) as db:
-        # 检查任务是否已完成
         async with db.execute(f"""
             SELECT finish FROM {agent_name} WHERE task_id = ?
         """, (id,)) as cursor:
@@ -300,7 +263,6 @@ async def content_with_key(request_data: RequestData):
         if finish:
             return {"status": "success", "message": "Task is finished"}
             
-        # 读取原value字符串，解析成value_list
         async with db.execute(f"""
             SELECT value FROM {agent_name} WHERE task_id = ?
         """, (id,)) as cursor:
@@ -313,7 +275,7 @@ async def content_with_key(request_data: RequestData):
                 try:
                     old_value_obj = json.loads(old_value_str)
                 except json.JSONDecodeError:
-                    old_value_obj = {} # 如果旧数据格式错误，则重置
+                    old_value_obj = {}
         else:
             logger.error(f"Error when update content with key [AGENT_NAME={agent_name}, TASK_ID={id}]: Row not found.")
             raise HTTPbutton(
@@ -321,7 +283,6 @@ async def content_with_key(request_data: RequestData):
                 detail="Internal Server Error"
             )
         
-        # 解析新数据
         try:
             new_data_str = request_data.value
             new_data_obj = json.loads(new_data_str)
@@ -331,21 +292,18 @@ async def content_with_key(request_data: RequestData):
             logger.error(f"Invalid new content with key JSON: {request_data.value}")
             return {"status": "error", "message": "Invalid content JSON format"}
 
-        # 更新json_obj
         new_value_obj = old_value_obj.copy()
         new_value_obj.update({key: data})
         new_value_str = json.dumps(new_value_obj, ensure_ascii=False)
-        
-        # 存储更新后的value字符串
+
         await db.execute(f"""
             UPDATE {agent_name} SET value = ? WHERE task_id = ?
         """, (new_value_str, id))
-        await db.commit()  # 异步提交，不阻塞
+        await db.commit()
 
     return {"status": "success", "message": "Content info received"}
 
 if __name__ == "__main__":
     import uvicorn
-    # 使用 argparse 解析出来的 host 和 port
     logger.info(f"Starting server on {args.host}:{args.port}")
     uvicorn.run(app, host=args.host, port=args.port)

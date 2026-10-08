@@ -13,7 +13,10 @@ This command will start both the frontend and backend servers automatically.
 
 ## Scoring
 
-`scoring.py` converts the agent operations collected in `results.db` into quantitative scores according to the predefined scoring rules in `tasks.db`.
+`scoring.py` converts agent operations collected in a local result database into
+quantitative scores according to the predefined scoring rules in `tasks.db`.
+Result databases and collected trajectories are not included in this
+code-only release.
 
 The script evaluates task success based on one of the following strategies:
 
@@ -32,17 +35,19 @@ python scoring.py
 
 ### Input Files
 - `tasks.db`: Contains user prompts, website URLs, scoring rules, and corresponding attack configurations.
-- `results.db`: Stores the operational logs of Web agents collected through instrumentation.
+- Result database (not included): Stores operational logs collected through
+  instrumentation.
 
 ### Output
-The script updates `results.db` with the calculated scores:
+The script updates the supplied result database with the calculated scores:
 - `value_score`: Score for value-based evaluation.
 - `button_score`: Score for button-click evaluation.
 - `result`: Final combined score based on the task evaluation strategy.
 
 ## Reproducing the Chapter 4 Evaluation
 
-The consolidated scripts use the repository's `tasks.db` and `results.db`:
+The consolidated scripts operate on the experiment databases configured by
+the user. Experimental result databases are not included in this release:
 
 ```bash
 python evaluation/01_score_tasks.py
@@ -56,11 +61,9 @@ harness by default, matching the final evaluation pipeline. Pass
 `--reference-model same` to reproduce the earlier per-model-control variant,
 or pass both reference arguments to select another fixed configuration.
 
-The `analysis/` directory contains the GLMM input and output artifacts copied
-unchanged from the analysis archive. They include the 22,092-row four-state
-input, fitted-model RDS files, model summaries, convergence diagnostics,
-omnibus tests, and marginal estimates. The supplied archive did not contain
-the R source code used to create these artifacts.
+The `evaluation/05_glmm/` directory contains the analysis notebooks. Private
+model inputs, fitted artifacts, collected trajectories, and experiment results
+are not part of this code-only release.
 
 ## Reproducing the Chapter 5 Attribution
 
@@ -73,21 +76,25 @@ python attribution/01_annotate_stage_states.py \
   --input extracted_logs.json --output annotated_logs.json
 ```
 
-Then assign every Defense Success task a stage label under each of the four
-attribution rules:
+Then assign every Defense Success task a stage label using the paper's
+attack-surface-specific localization rule, together with explicitly named
+sensitivity rules:
 
 ```bash
 python attribution/02_attribute_defense_success.py \
+  --results-db /path/to/results.db \
   --harness agent_e --model gpt_4o \
   --logs-json annotated_logs.json \
   --log-harness-key agent_e --log-model-key gpt_4o \
   --output attribution_agent_e_gpt_4o.jsonl
 ```
 
-The four task-level labels are the paper rule
-`longest_contiguous_safe_segment`, the two intentionally incorrect rules
-`first_safe_state` and `first_unsafe_to_safe_transition`, and the sensitivity
-alternative `last_unsafe_to_safe_transition_with_first_safe_fallback`.
+The canonical output field is `paper_surface_specific`. It localizes user-side
+attacks at the first observed safe state and web-side attacks at the last
+observed unsafe-to-safe transition. A web-side trace without such a transition
+is left unlocalized (`null`); it does not fall back to the first safe state.
+The former longest-safe-segment method is retained only as
+`longest_contiguous_safe_segment_legacy` for sensitivity analysis.
 Calibration controls (`WT_*` and `BK_*`) are never treated as attack traces in
 stage attribution. See `attribution/README.md` for the complete Table 8 label
-taxonomy, input format, rule definitions, and tests.
+taxonomy, input format, and rule definitions.
